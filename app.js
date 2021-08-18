@@ -1,6 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-const { MongoClient, Db } = require('mongodb');
+const { MongoClient, ObjectId } = require('mongodb');
 require('dotenv').config();
 
 const app = express();
@@ -13,10 +13,25 @@ const URI = `mongodb+srv://tomask:${process.env.MONGODBPW}@cluster0.rjxok.mongod
 
 const client = new MongoClient(URI);
 
-app.get('/', async (req, res) => {
+app.get('/products', async (req, res) => {
   try {
     const con = await client.connect();
     const data = await con.db('demo3').collection('products').find().toArray();
+    await con.close();
+    res.send(data);
+  } catch (err) {
+    res.status(500).send({ err: 'Please try again' });
+  }
+});
+
+app.get('/products/:id', async (req, res) => {
+  try {
+    const con = await client.connect();
+    const data = await con
+      .db('demo3')
+      .collection('products')
+      .find(ObjectId(req.params.id))
+      .toArray();
     await con.close();
     res.send(data);
   } catch (err) {
