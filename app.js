@@ -14,6 +14,8 @@ const URI = `mongodb+srv://tomask:${process.env.MONGODBPW}@cluster0.rjxok.mongod
 
 const client = new MongoClient(URI);
 
+// Products
+
 app.get('/products', async (req, res) => {
   try {
     const con = await client.connect();
@@ -35,6 +37,38 @@ app.get('/products/:id', async (req, res) => {
       .toArray();
     await con.close();
     res.send(data);
+  } catch (err) {
+    res.status(500).send({ err: 'Please try again' });
+  }
+});
+
+// Orders
+app.get('/orders', async (req, res) => {
+  try {
+    const con = await client.connect();
+    const orders = await con.db('demo3').collection('orders').find().toArray();
+    await con.close();
+    res.send(orders);
+  } catch (err) {
+    res.status(500).send({ err: 'Please try again' });
+  }
+});
+
+app.post('/orders', async (req, res) => {
+  const { name, email, product_id, price } = req.body;
+  if (!name || !email || !product_id || !price) {
+    return res.status(400).send({ err: 'Incorrect data passed' });
+  }
+  try {
+    const con = await client.connect();
+    const dbRes = await con.db('demo3').collection('orders').insertOne({
+      name,
+      email,
+      product_id,
+      price,
+    });
+    await con.close();
+    res.send({ msg: 'Order added successfully!', dbRes });
   } catch (err) {
     res.status(500).send({ err: 'Please try again' });
   }
